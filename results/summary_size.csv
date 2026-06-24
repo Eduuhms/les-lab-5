@@ -1,0 +1,4 @@
+Cenário,REST_média,GQL_média,REST_mediana,GQL_mediana,Redução(%),p_valor,Significativo,Cohen_d,Efeito
+Single Book — Card View,1403.0,160.0,1403.0,160.0,88.6,0.0,Sim,0.0,negligível
+Book List (10 items),12544.0,830.0,12544.0,830.0,93.38,0.0,Sim,0.0,negligível
+Single Book — Detail View,1403.0,900.0,1403.0,900.0,35.85,0.0,Sim,0.0,negligível
