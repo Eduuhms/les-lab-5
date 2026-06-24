@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lab 05</title>
+<style>
+:root{
+  --navy:#0f1e2d;--navy-hi:#1c3350;--navy-txt:#a8bfd0;
+  --rest:#c2410c;--rest-lt:#fff7ed;--rest-bd:#fed7aa;
+  --gql:#0284c7;--gql-lt:#f0f9ff;--gql-bd:#bae6fd;
+  --grn:#059669;--grn-lt:#ecfdf5;
+  --ground:#f1f5f9;--white:#ffffff;
+  --text:#0d1b2a;--mid:#475569;--muted:#64748b;--faint:#94a3b8;
+  --bdr:#dde3eb;
+  --mono:ui-monospace,'Cascadia Code','Courier New',monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--ground);color:var(--text);display:flex;min-height:100vh;font-size:14px;line-height:1.5}
+
+/* ── Sidebar ── */
+.sb{width:192px;min-height:100vh;background:var(--white);border-right:1px solid var(--bdr);display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:50;overflow:hidden}
+.sb-brand{padding:1.1rem 1rem .9rem;display:flex;align-items:center;gap:.6rem;flex-shrink:0}
+.sb-icon{width:30px;height:30px;background:linear-gradient(135deg,var(--rest),#ea580c);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;font-weight:800;letter-spacing:-.5px;flex-shrink:0;font-family:var(--mono)}
+.sb-name{font-size:.82rem;font-weight:700;color:var(--text);line-height:1.25}
+.sb-sub{font-size:.63rem;color:var(--muted);margin-top:.1rem}
+.nav{padding:.6rem .6rem;flex:1;overflow-y:auto}
+.nav-sec{font-size:.6rem;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;padding:.55rem .55rem .2rem;margin-top:.2rem}
+.ni{display:flex;align-items:center;gap:.5rem;padding:.44rem .6rem;border-radius:6px;cursor:pointer;font-size:.79rem;color:var(--mid);transition:background .12s,color .12s;margin-bottom:.04rem;user-select:none}
+.ni:hover{background:#f1f5f9;color:var(--text)}
+.ni.active{background:#eff6ff;color:#1d4ed8;font-weight:600}
+.ni svg{width:14px;height:14px;opacity:.45;flex-shrink:0;transition:opacity .12s}
+.ni.active svg{opacity:1}
+.ni-badge{margin-left:auto;font-size:.6rem;background:#e0e7ff;color:#4338ca;padding:.06rem .35rem;border-radius:999px;font-weight:600}
+.sb-foot{padding:.8rem 1rem;border-top:1px solid var(--bdr);flex-shrink:0}
+.sb-foot p{font-size:.67rem;color:var(--muted);line-height:1.7}
+.sb-foot strong{color:var(--text)}
+.sb-tag{display:inline-block;background:var(--gql-lt);color:#0369a1;font-size:.59rem;padding:.07rem .38rem;border-radius:3px;margin-top:.3rem;font-family:var(--mono);border:1px solid var(--gql-bd)}
+
+/* ── Main ── */
+.main{margin-left:192px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{height:52px;background:var(--white);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 1.65rem;position:sticky;top:0;z-index:40;gap:.8rem}
+.topbar-title{font-size:.93rem;font-weight:700;color:var(--text)}
+.topbar-sub{font-size:.77rem;color:var(--muted)}
+.topbar-right{margin-left:auto;display:flex;gap:.4rem;align-items:center}
+.chip{font-size:.68rem;padding:.16rem .5rem;border-radius:999px;font-weight:500;border:1px solid;white-space:nowrap}
+.chip-g{background:var(--grn-lt);color:#166534;border-color:#bbf7d0}
+.chip-b{background:var(--gql-lt);color:#1e40af;border-color:var(--gql-bd)}
+.content{padding:1.35rem 1.65rem;flex:1}
+
+/* ── Sections ── */
+.sec{display:none}.sec.active{display:block}
+
+/* ── Hero thesis ── */
+.hero{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.1rem}
+.hero-half{border-radius:10px;padding:1.15rem 1.25rem 1rem;border:1px solid}
+.hero-half.rest{background:var(--rest-lt);border-color:var(--rest-bd)}
+.hero-half.gql{background:var(--gql-lt);border-color:var(--gql-bd)}
+.hero-eyebrow{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:.55rem;display:flex;align-items:center;gap:.4rem}
+.hero-half.rest .hero-eyebrow{color:var(--rest)}
+.hero-half.gql .hero-eyebrow{color:var(--gql)}
+.hero-headline{font-size:1.15rem;font-weight:800;line-height:1.25;margin-bottom:.55rem}
+.hero-half.rest .hero-headline{color:var(--rest)}
+.hero-half.gql .hero-headline{color:var(--gql)}
+.hero-stat{font-family:var(--mono);font-size:.78rem;color:var(--mid);line-height:1.65}
+
+/* ── Sec header ── */
+.sec-hd{position:relative;margin-bottom:1.1rem;padding-left:.05rem}
+.sec-ghost{position:absolute;right:0;top:-1.2rem;font-size:5.5rem;font-weight:900;color:rgba(13,27,42,.04);line-height:1;font-family:var(--mono);pointer-events:none;user-select:none}
+.sec-hd h2{font-size:1rem;font-weight:800;color:var(--text);position:relative}
+.sec-hd p{font-size:.77rem;color:var(--muted);margin-top:.2rem;position:relative}
+
+/* ── KPI row ── */
+.krow{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.75rem;margin-bottom:1rem}
+.kc{background:var(--white);border-radius:9px;padding:.85rem 1rem;border:1px solid var(--bdr)}
+.kl{font-size:.65rem;color:var(--muted);font-weight:600;margin-bottom:.35rem;letter-spacing:.01em}
+.kv{font-size:1.55rem;font-weight:800;line-height:1;font-family:var(--mono)}
+.kv.rest{color:var(--rest)}.kv.gql{color:var(--gql)}.kv.grn{color:var(--grn)}
+.ks{font-size:.68rem;color:var(--faint);margin-top:.2rem}
+.kt{font-size:.66rem;font-weight:600;padding:.1rem .38rem;border-radius:4px;display:inline-block;margin-top:.32rem}
+.kt-r{background:#fef2f2;color:#dc2626}.kt-g{background:var(--grn-lt);color:#166534}.kt-v{background:#f5f3ff;color:#7c3aed}
+
+/* ── Chart grid ── */
+.cgrid{display:grid;gap:.85rem;margin-bottom:.85rem}
+.c2{grid-template-columns:1fr 1fr}.c1{grid-template-columns:1fr}
+@media(max-width:860px){.c2{grid-template-columns:1fr}}
+.cc{background:var(--white);border-radius:9px;border:1px solid var(--bdr);padding:.95rem 1.1rem}
+.ch3{margin-bottom:.65rem}
+.ch3 h3{font-size:.82rem;font-weight:700;color:var(--text)}
+.ch3 p{font-size:.71rem;color:var(--muted);margin-top:.1rem}
+svg.ch{width:100%;display:block;overflow:visible}
+.cleg{display:flex;gap:.85rem;font-size:.71rem;color:var(--mid);align-items:center;margin-bottom:.6rem;flex-wrap:wrap}
+.ld{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:.25rem;flex-shrink:0}
+.finding{border-radius:8px;padding:.75rem 1rem;font-size:.78rem;margin-top:.85rem;line-height:1.7;border:1px solid}
+.finding.info{background:var(--gql-lt);border-color:var(--gql-bd);color:#1e40af}
+.finding strong{font-weight:700}
+.note{font-size:.67rem;color:var(--faint);margin-top:.5rem;line-height:1.55}
+
+/* ── Stats table ── */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+th{background:#f8fafc;text-align:left;padding:.52rem .7rem;font-weight:700;color:var(--mid);border-bottom:1px solid var(--bdr);white-space:nowrap;font-size:.7rem;letter-spacing:.01em}
+td{padding:.45rem .7rem;border-bottom:1px solid #f1f5f9;color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+.badge{display:inline-block;padding:.08rem .4rem;border-radius:4px;font-size:.69rem;font-weight:600}
+.br2{background:#fee2e2;color:#991b1b}.bb2{background:#dbeafe;color:#1e40af}.bg2{background:#dcfce7;color:#166534}
+
+/* ── Tooltip ── */
+.tt{position:fixed;background:#1e293b;color:#fff;padding:.38rem .62rem;border-radius:6px;font-size:.71rem;pointer-events:none;opacity:0;transition:opacity .1s;z-index:999;white-space:nowrap;line-height:1.7;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sb">
+  <div class="sb-brand">
+      <div class="sb-name">GraphQL vs REST</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-sec">Visão Geral</div>
+    <div class="ni active" onclick="showSec('ov',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Overview
+    </div>
+    <div class="nav-sec">Perguntas de Pesquisa</div>
+    <div class="ni" onclick="showSec('rq1',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      RQ1: Tempo de Resposta
+      <span class="ni-badge">4</span>
+    </div>
+    <div class="ni" onclick="showSec('rq2',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="5" height="18" rx="1"/><rect x="9.5" y="8" width="5" height="13" rx="1"/><rect x="17" y="12" width="5" height="9" rx="1"/></svg>
+      RQ2: Tamanho de Resposta
+      <span class="ni-badge">4</span>
+    </div>
+    <div class="nav-sec">Resultados</div>
+    <div class="ni" onclick="showSec('st',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+      Análise Estatística
+    </div>
+  </nav>
+</aside>
+
+<!-- Main -->
+<div class="main">
+  <div class="topbar">
+    <span class="topbar-title" id="tb-title">Overview</span>
+    <span class="topbar-sub" id="tb-sub">Resultados do experimento controlado</span>
+  </div>
+  <div class="content">
+
+  <!-- OVERVIEW -->
+  <div id="s-ov" class="sec active">
+    <div class="krow">
+      <div class="kc"><div class="kl">Total de Medições</div><div class="kv" style="font-family:var(--mono)">180</div><div class="ks">30 trials × 2 APIs × 3 cenários</div></div>
+      <div class="kc"><div class="kl">Outliers Detectados</div><div class="kv" style="font-family:var(--mono)">14</div><div class="ks">7,8% das observações · REST: 11 · GQL: 3</div></div>
+      <div class="kc"><div class="kl">Medição Mais Rápida</div><div class="kv rest">3,61 ms</div><div class="ks">REST · Book Card (mín absoluto)</div></div>
+      <div class="kc"><div class="kl">Medição Mais Lenta</div><div class="kv gql">48,86 ms</div><div class="ks">GraphQL · Detalhe (outlier extremo)</div></div>
+    </div>
+    <div class="cgrid c1">
+      <div class="cc">
+        <div class="ch3"><h3>Dispersão Completa — 180 Observações Brutas</h3><p>Cada ponto = 1 trial · silhueta de fundo = densidade KDE (forma da distribuição) · linha horizontal = mediana · distribuição assimétrica à direita (cauda nos valores altos)</p></div>
+        <div class="cleg"><span><span class="ld" style="background:var(--rest)"></span>REST</span><span><span class="ld" style="background:var(--gql)"></span>GraphQL</span><span style="color:#94a3b8;font-size:.68rem">▲ = outliers acima de 50 ms (clipados no eixo)</span></div>
+        <svg id="ov-scatter" class="ch" height="290" viewBox="0 0 880 290"></svg>
+      </div>
+    </div>
+    <div class="cgrid c1">
+      <div class="cc">
+        <div class="ch3"><h3>Amplitude por Grupo — Mín · Q1 · Mediana · Q3 · Máx</h3><p>Caixa = IQR (onde estão 50% dos dados) · ◆ = mediana · traço = mín/máx · ○ = outlier individual detectado</p></div>
+        <div class="cleg"><span><span class="ld" style="background:var(--rest)"></span>REST</span><span><span class="ld" style="background:var(--gql)"></span>GraphQL</span></div>
+        <svg id="ov-range" class="ch" height="220" viewBox="0 0 440 220"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- RQ1 -->
+  <div id="s-rq1" class="sec">
+    <div class="sec-hd">
+      <div class="sec-ghost">01</div>
+      <h2>RQ1: Respostas GraphQL são mais rápidas que REST?</h2>
+      <p>30 medições por combinação cenário × API · ordem randomizada (seed=42) · 5 warmup descartadas · Shapiro-Wilk → Wilcoxon</p>
+    </div>
+    <div class="krow">
+      <div class="kc"><div class="kl">Book Card — REST mediana</div><div class="kv rest">5,16 ms</div><div class="ks">GraphQL: 7,98 ms</div></div>
+      <div class="kc"><div class="kl">Lista de 10 — REST mediana</div><div class="kv rest">5,72 ms</div><div class="ks">GraphQL: 10,02 ms</div></div>
+      <div class="kc"><div class="kl">Detalhe — REST mediana</div><div class="kv rest">5,48 ms</div><div class="ks">GraphQL: 10,81 ms</div></div>
+      <div class="kc"><div class="kl">Maior tamanho de efeito</div><div class="kv" style="font-family:var(--mono)">d=0,91</div><div class="ks">Cohen's d — cenário Detalhe</div></div>
+    </div>
+    <div class="cgrid c2">
+      <div class="cc">
+        <div class="ch3"><h3>Box Plots — Distribuição do Tempo</h3><p>Caixa = IQR · linha = mediana · ◆ = média · ○ = outlier</p></div>
+        <div class="cleg"><span><span class="ld" style="background:var(--rest)"></span>REST</span><span><span class="ld" style="background:var(--gql)"></span>GraphQL</span></div>
+        <svg id="r1-box" class="ch" height="270" viewBox="0 0 440 270"></svg>
+      </div>
+      <div class="cc">
+        <div class="ch3"><h3>Strip Chart — 30 Observações Individuais</h3><p>Todos os pontos brutos por grupo · linha horizontal = mediana</p></div>
+        <div class="cleg"><span><span class="ld" style="background:var(--rest)"></span>REST</span><span><span class="ld" style="background:var(--gql)"></span>GraphQL</span></div>
+        <svg id="r1-strip" class="ch" height="270" viewBox="0 0 440 270"></svg>
+      </div>
+    </div>
+    <div class="cgrid c2">
+      <div class="cc">
+        <div class="ch3"><h3>ECDF — Distribuição Acumulada Empírica</h3><p>Se a curva REST está à esquerda da GQL → REST é estocásticamente mais rápido · linhas tracejadas = medianas</p></div>
+        <div class="cleg"><span><span class="ld" style="background:var(--rest)"></span>REST</span><span><span class="ld" style="background:var(--gql)"></span>GraphQL</span></div>
+        <svg id="r1-ecdf" class="ch" height="250" viewBox="0 0 440 250"></svg>
+      </div>
+      <div class="cc">
+        <div class="ch3"><h3>Violin Plot — Forma da Distribuição</h3><p>KDE da distribuição real · dados não-normais (Shapiro-Wilk p&lt;0,001) · linha = mediana · caixa = IQR</p></div>
+        <div class="cleg"><span><span class="ld" style="background:var(--rest)"></span>REST</span><span><span class="ld" style="background:var(--gql)"></span>GraphQL</span></div>
+        <svg id="r1-violin" class="ch" height="250" viewBox="0 0 440 250"></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- RQ2 -->
+  <div id="s-rq2" class="sec">
+    <div class="sec-hd">
+      <div class="sec-ghost">02</div>
+      <h2>RQ2: Respostas GraphQL têm tamanho menor?</h2>
+      <p>REST retorna 20 campos fixos · GraphQL retorna exatamente os campos solicitados · tamanhos são determinísticos (variância zero)</p>
+    </div>
+    <div class="krow">
+      <div class="kc"><div class="kl">Book Card (5 campos)</div><div class="kv grn">−88,6%</div><div class="ks">1.403 B → 160 B</div></div>
+      <div class="kc"><div class="kl">Lista de 10 (4 campos)</div><div class="kv grn">−93,4%</div><div class="ks">12.544 B → 830 B</div></div>
+      <div class="kc"><div class="kl">Detalhe (13 campos)</div><div class="kv grn">−35,9%</div><div class="ks">1.403 B → 900 B</div></div>
+      <div class="kc"><div class="kl">p-valor (todos cenários)</div><div class="kv" style="font-family:var(--mono)">≈ 0</div><div class="ks">t pareado — certeza absoluta</div></div>
+    </div>
+    <div class="cgrid c2">
+      <div class="cc">
+        <div class="ch3"><h3>Tamanho Absoluto (bytes)</h3><p>Comparação direta por cenário — escala log para melhor visualização</p></div>
+        <div class="cleg"><span><span class="ld" style="background:var(--rest)"></span>REST (20 campos)</span><span><span class="ld" style="background:var(--gql)"></span>GraphQL</span></div>
+        <svg id="r2-abs" class="ch" height="250" viewBox="0 0 440 250"></svg>
+      </div>
+      <div class="cc">
+        <div class="ch3"><h3>Redução REST → GraphQL (%)</h3><p>Percentual de dados eliminados pela precisão do GraphQL</p></div>
+        <svg id="r2-pct" class="ch" height="250" viewBox="0 0 440 250"></svg>
+      </div>
+    </div>
+    <div class="cgrid c2">
+      <div class="cc">
+        <div class="ch3"><h3>Over-Fetching — Útil vs. Desperdiçado</h3><p>Do que o REST envia, quanto o cliente realmente usa?</p></div>
+        <svg id="r2-waste" class="ch" height="230" viewBox="0 0 440 230"></svg>
+        <p class="note">Azul = dados úteis (recebidos pelo GraphQL) · Laranja = bytes desperdiçados pelo REST</p>
+      </div>
+      <div class="cc">
+        <div class="ch3"><h3>Campos por Cenário — Causa do Over-Fetching</h3><p>Cada célula = 1 dos 20 campos disponíveis · azul = solicitado pelo GraphQL · cinza = enviado apenas pelo REST</p></div>
+        <svg id="r2-fields" class="ch" height="230" viewBox="0 0 440 230"></svg>
+        <p class="note">GraphQL é cirúrgico: solicita exatamente os campos necessários. REST envia sempre os 20.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div id="s-st" class="sec">
+    <div class="sec-hd">
+      <div class="sec-ghost">03</div>
+      <h2>Análise Estatística Completa</h2>
+      <p>Normalidade: Shapiro-Wilk · Teste principal: Wilcoxon com sinal e postos (dados não-normais) · α = 0,05</p>
+    </div>
+    <div class="cc" style="margin-bottom:.85rem">
+      <div class="tw">
+        <table>
+          <thead><tr><th>Cenário</th><th>REST mediana</th><th>GQL mediana</th><th>Δ Tempo</th><th>Teste</th><th>p-valor</th><th>Signif.</th><th>Cohen's d</th><th>REST tamanho</th><th>GQL tamanho</th><th>Δ Tamanho</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Book Card (5 campos)</strong></td><td><span class="badge br2">5,16 ms</span></td><td><span class="badge bb2">7,98 ms</span></td><td>+54,5%</td><td>Wilcoxon</td><td>0,0032</td><td><span class="badge bg2">✓ Sim</span></td><td>0,629 — médio</td><td>1.403 B</td><td>160 B</td><td><strong>−88,6%</strong></td></tr>
+            <tr><td><strong>Lista de 10 (4 campos)</strong></td><td><span class="badge br2">5,72 ms</span></td><td><span class="badge bb2">10,02 ms</span></td><td>+75,2%</td><td>Wilcoxon</td><td>0,0028</td><td><span class="badge bg2">✓ Sim</span></td><td>0,539 — médio</td><td>12.544 B</td><td>830 B</td><td><strong>−93,4%</strong></td></tr>
+            <tr><td><strong>Detalhe (13 campos)</strong></td><td><span class="badge br2">5,48 ms</span></td><td><span class="badge bb2">10,81 ms</span></td><td>+97,3%</td><td>Wilcoxon</td><td>0,0003</td><td><span class="badge bg2">✓ Sim</span></td><td>0,906 — grande</td><td>1.403 B</td><td>900 B</td><td><strong>−35,9%</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="cgrid c2">
+      <div class="cc">
+        <div class="ch3"><h3>Cohen's d por Cenário</h3><p>Tamanho de efeito: pequeno &lt;0,5 · médio &lt;0,8 · grande ≥0,8</p></div>
+        <svg id="st-d" class="ch" height="210" viewBox="0 0 440 210"></svg>
+      </div>
+      <div class="cc">
+        <div class="ch3"><h3>Shapiro-Wilk — Normalidade (tempo)</h3><p>Todos os grupos rejeitam normalidade → Wilcoxon adequado</p></div>
+        <svg id="st-norm" class="ch" height="210" viewBox="0 0 440 210"></svg>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- content -->
+</div><!-- main -->
+
+<div id="tt" class="tt"></div>
+
+<script>
+// ── Navigation ──────────────────────────────────────────────────────────
+var TITLES={
+  ov:['Overview','Resultados do experimento controlado'],
+  rq1:['RQ1: Tempo','Comparação de velocidade GraphQL vs REST'],
+  rq2:['RQ2: Tamanho','Comparação de payload GraphQL vs REST'],
+  st:['Análise Estatística','Testes de significância e tamanho de efeito']
+};
+function showSec(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('active')});
+  document.querySelectorAll('.ni').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('s-'+id).classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('tb-title').textContent=TITLES[id][0];
+  document.getElementById('tb-sub').textContent=TITLES[id][1];
+}
+
+// ── SVG helpers ──────────────────────────────────────────────────────────
+var NS='http://www.w3.org/2000/svg';
+var TT=document.getElementById('tt');
+function mk(tag,attrs,text){
+  var e=document.createElementNS(NS,tag);
+  for(var k in attrs) e.setAttribute(k,attrs[k]);
+  if(text!=null) e.textContent=String(text);
+  return e;
+}
+function addTip(el,fn){
+  el.addEventListener('mousemove',function(e){
+    TT.innerHTML=fn();TT.style.opacity=1;
+    TT.style.left=(e.clientX+14)+'px';TT.style.top=(e.clientY-8)+'px';
+  });
+  el.addEventListener('mouseleave',function(){TT.style.opacity=0});
+}
+
+// ── Data ─────────────────────────────────────────────────────────────────
+var REST_C='#c2410c', GQL_C='#0284c7', GRN_C='#059669';
+var SC=[
+  {lbl:'Book Card',sub:'5 campos',
+   rest:{min:3.605,q1:4.287,med:5.163,q3:5.817,max:6.477,mean:7.239,std:5.922,
+    out:[13.114,13.546,20.446,22.569,27.375],
+    vals:[3.605,3.76,3.846,3.947,4.002,4.019,4.187,4.274,4.325,4.385,4.46,4.624,4.708,4.719,5.138,5.187,5.252,5.311,5.476,5.489,5.514,5.602,5.889,5.918,6.477,13.114,13.546,20.446,22.569,27.375]},
+   gql:{min:5.635,q1:6.481,med:7.975,q3:15.859,max:29.348,mean:11.4,std:7.04,
+    out:[],
+    vals:[5.635,5.665,5.862,5.865,6.223,6.225,6.375,6.481,6.484,6.663,6.74,6.856,6.866,7.352,7.926,8.025,8.169,8.785,9.426,9.77,10.63,15.642,15.931,16.106,17.923,19.159,21.816,26.924,27.128,29.348]},
+   rs:1403,gs:160,sp:88.6,td:54.5},
+  {lbl:'Lista de 10',sub:'4 campos',
+   rest:{min:4.426,q1:5.112,med:5.721,q3:6.84,max:8.866,mean:8.088,std:6.854,
+    out:[24.777,24.97,34.195],
+    vals:[4.426,4.437,4.45,4.635,4.977,5.045,5.089,5.091,5.177,5.482,5.57,5.577,5.63,5.66,5.69,5.751,5.759,5.785,6.173,6.478,6.536,6.665,6.898,7.14,7.787,7.934,8.866,24.777,24.97,34.195]},
+   gql:{min:6.618,q1:8.244,med:10.024,q3:12.561,max:17.37,mean:11.835,std:6.825,
+    out:[30.853,39.281],
+    vals:[6.618,6.625,6.737,7.046,7.105,7.482,7.951,8.242,8.249,8.713,8.928,9.53,9.576,9.599,9.932,10.116,10.335,10.791,10.81,11.414,11.675,12.555,12.562,12.593,13.147,13.418,15.787,17.37,30.853,39.281]},
+   rs:12544,gs:830,sp:93.4,td:75.2},
+  {lbl:'Detalhe',sub:'13 campos',
+   rest:{min:4.222,q1:5.009,med:5.477,q3:6.581,max:7.508,mean:6.834,std:4.166,
+    out:[14.196,17.879,23.477],
+    vals:[4.222,4.258,4.31,4.58,4.685,4.702,4.718,4.973,5.117,5.17,5.17,5.218,5.302,5.318,5.381,5.574,5.585,5.603,5.71,6.23,6.29,6.307,6.672,6.723,6.798,7.354,7.508,14.196,17.879,23.477]},
+   gql:{min:6.969,q1:8.43,med:10.809,q3:13.027,max:19.132,mean:12.475,std:7.587,
+    out:[48.857],
+    vals:[6.969,7.022,7.446,7.543,7.986,8.299,8.345,8.423,8.452,8.568,8.924,9.124,9.872,10.058,10.518,11.101,11.134,11.595,11.882,12.095,12.279,12.293,13.271,14.401,15.413,15.976,18.628,18.658,19.132,48.857]},
+   rs:1403,gs:900,sp:35.9,td:97.3}
+];
+
+// ── Generic chart helpers ────────────────────────────────────────────────
+function yGrid(svg,P,pH,yMx,ticks,fmt){
+  ticks.forEach(function(v){
+    if(v>yMx*1.05) return;
+    var y=P.t+pH-(v/yMx)*pH;
+    svg.appendChild(mk('line',{x1:P.l,y1:y,x2:P.w-P.r,y2:y,stroke:'#f1f5f9','stroke-width':1}));
+    svg.appendChild(mk('text',{x:P.l-5,y:y+3.5,'text-anchor':'end',fill:'#94a3b8','font-size':8.5,'font-family':'ui-monospace,monospace'},fmt?fmt(v):v));
+  });
+}
+function xLabels(svg,P,H,gW,items){
+  items.forEach(function(s,i){
+    var cx=P.l+i*gW+gW/2;
+    svg.appendChild(mk('text',{x:cx,y:H-P.b+14,'text-anchor':'middle',fill:'#334155','font-size':10.5,'font-weight':700},s.lbl));
+    svg.appendChild(mk('text',{x:cx,y:H-P.b+25,'text-anchor':'middle',fill:'#94a3b8','font-size':8.5},s.sub));
+  });
+}
+function axis(svg,P,H){
+  svg.appendChild(mk('line',{x1:P.l,y1:P.t,x2:P.l,y2:H-P.b,stroke:'#dde3eb','stroke-width':1}));
+}
+
+// ── Box plot helper ───────────────────────────────────────────────────────
+function drawOneBox(sY,x,bW,st,c){
+  var g=mk('g',{cursor:'crosshair'});
+  // whiskers
+  svg_line(g,x,sY(st.max),x,sY(st.q3),c,1.5);
+  svg_line(g,x,sY(st.q1),x,sY(st.min),c,1.5);
+  svg_line(g,x-bW*.3,sY(st.max),x+bW*.3,sY(st.max),c,1.5);
+  svg_line(g,x-bW*.3,sY(st.min),x+bW*.3,sY(st.min),c,1.5);
+  // IQR box
+  var boxY=sY(st.q3), boxH=sY(st.q1)-sY(st.q3);
+  g.appendChild(mk('rect',{x:x-bW/2,y:boxY,width:bW,height:boxH,fill:c+'25',stroke:c,'stroke-width':1.8,rx:2}));
+  // median
+  svg_line(g,x-bW/2,sY(st.med),x+bW/2,sY(st.med),c,2.5);
+  // mean diamond
+  var my=sY(st.mean);
+  g.appendChild(mk('polygon',{points:x+','+( my-4)+' '+(x+4)+','+my+' '+x+','+(my+4)+' '+(x-4)+','+my,fill:c}));
+  // outliers
+  st.out.forEach(function(v,oi){
+    var jit=((oi*11+5)%7-3)*1.5;
+    g.appendChild(mk('circle',{cx:x+jit,cy:sY(v),r:2.6,fill:'none',stroke:c,'stroke-width':1.2,opacity:.75}));
+  });
+  return g;
+}
+function svg_line(parent,x1,y1,x2,y2,c,w){
+  parent.appendChild(mk('line',{x1:x1,y1:y1,x2:x2,y2:y2,stroke:c,'stroke-width':w}));
+}
+
+// ── Chart: Overview scatter + KDE ─────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('ov-scatter');
+    var W=880,H=290,P={t:22,r:16,b:70,l:40,w:880};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var yMx=50;
+    var sY=function(v){return P.t+pH-(Math.min(v,yMx)/yMx)*pH};
+    // KDE helpers
+    function slv(vals){
+      var n=vals.length,m=vals.reduce(function(a,b){return a+b},0)/n;
+      var s=Math.sqrt(vals.reduce(function(a,v){return a+(v-m)*(v-m)},0)/(n-1));
+      return Math.max(0.5,1.06*s*Math.pow(n,-0.2));
+    }
+    function kd(vals,pts,h){
+      var sq2pi=Math.sqrt(2*Math.PI);
+      return pts.map(function(x){
+        var s=0;vals.forEach(function(v){var z=(x-v)/h;s+=Math.exp(-0.5*z*z);});
+        return s/(vals.length*h*sq2pi);
+      });
+    }
+    var kPts=[];for(var ki=0;ki<=100;ki++) kPts.push(ki*yMx/100);
+    // Build 6 groups
+    var groups=[];
+    SC.forEach(function(s){
+      groups.push({sc:s,api:'REST',vals:s.rest.vals,med:s.rest.med,q1:s.rest.q1,q3:s.rest.q3,c:REST_C});
+      groups.push({sc:s,api:'GQL',vals:s.gql.vals,med:s.gql.med,q1:s.gql.q1,q3:s.gql.q3,c:GQL_C});
+    });
+    // Global density max
+    var allD=[];
+    groups.forEach(function(g){allD=allD.concat(kd(g.vals,kPts,slv(g.vals)));});
+    var dMax=Math.max.apply(null,allD);
+    // Grid
+    [0,10,20,30,40,50].forEach(function(v){
+      var y=sY(v);
+      svg.appendChild(mk('line',{x1:P.l,y1:y,x2:W-P.r,y2:y,stroke:'#f1f5f9','stroke-width':1}));
+      svg.appendChild(mk('text',{x:P.l-4,y:y+3.5,'text-anchor':'end',fill:'#94a3b8','font-size':9,'font-family':'ui-monospace,monospace'},v));
+    });
+    svg.appendChild(mk('line',{x1:P.l,y1:P.t,x2:P.l,y2:H-P.b,stroke:'#dde3eb','stroke-width':1}));
+    svg.appendChild(mk('text',{x:11,y:P.t+pH/2,'text-anchor':'middle',fill:'#94a3b8','font-size':9,transform:'rotate(-90 11 '+(P.t+pH/2)+')'},'ms'));
+    // Separator lines between scenarios
+    var gW=pW/groups.length;
+    [2,4].forEach(function(idx){
+      var x=P.l+idx*gW;
+      svg.appendChild(mk('line',{x1:x,y1:P.t,x2:x,y2:H-P.b,stroke:'#e2e8f0','stroke-width':1,'stroke-dasharray':'4,3'}));
+    });
+    var halfW=Math.min(gW*0.44,28);
+    groups.forEach(function(g,i){
+      var cx=P.l+i*gW+gW/2;
+      var h=slv(g.vals), dens=kd(g.vals,kPts,h);
+      // KDE silhouette — right-side only, creating the distribution "shape"
+      var poly=[];
+      poly.push(cx+','+sY(0));
+      kPts.forEach(function(pt,ki){
+        var hw=(dens[ki]/dMax)*halfW;
+        poly.push((cx+hw)+','+sY(pt));
+      });
+      poly.push(cx+','+sY(yMx));
+      svg.appendChild(mk('polygon',{points:poly.join(' '),fill:g.c+'22',stroke:g.c+'55','stroke-width':1.2}));
+      // Mirror left-side for symmetry (lighter)
+      var polyL=[];
+      polyL.push(cx+','+sY(yMx));
+      kPts.forEach(function(pt,ki){
+        var hw=(dens[ki]/dMax)*halfW;
+        polyL.push((cx-hw*.5)+','+sY(pt));
+      });
+      polyL.push(cx+','+sY(0));
+      svg.appendChild(mk('polygon',{points:polyL.join(' '),fill:g.c+'12',stroke:'none'}));
+      // Jittered dots
+      g.vals.forEach(function(v,vi){
+        var clipped=v>yMx;
+        var y=sY(clipped?yMx:v);
+        var jit=((vi*7+i*3)%15-7)*1.1;
+        var dot=mk('circle',{cx:cx+jit,cy:y,r:2.4,fill:g.c,opacity:clipped?.25:.7});
+        if(clipped) dot.setAttribute('opacity','.25');
+        (function(grp,val,cl){
+          addTip(dot,function(){
+            return '<strong>'+grp.sc.lbl+' — '+grp.api+'</strong><br>'+val.toFixed(2)+' ms'+(cl?' ▲ outlier clipado':'');
+          });
+        })(g,v,clipped);
+        svg.appendChild(dot);
+      });
+      // Median line
+      svg_line(svg,cx-halfW*.7,sY(g.med),cx+halfW*.7,sY(g.med),g.c,2.2);
+      // API label
+      svg.appendChild(mk('text',{x:cx,y:H-P.b+14,'text-anchor':'middle',fill:g.c,'font-size':9.5,'font-weight':700},g.api));
+    });
+    // Scenario labels (centered between their REST+GQL pair)
+    SC.forEach(function(s,i){
+      var midX=P.l+(i*2+1)*gW;
+      svg.appendChild(mk('text',{x:midX,y:H-P.b+30,'text-anchor':'middle',fill:'#334155','font-size':11,'font-weight':800},s.lbl));
+      svg.appendChild(mk('text',{x:midX,y:H-P.b+44,'text-anchor':'middle',fill:'#94a3b8','font-size':9},s.sub));
+    });
+    // Distribution shape annotation
+    svg.appendChild(mk('text',{x:W-P.r,y:P.t,'text-anchor':'end',fill:'#94a3b8','font-size':8.5},'forma: assimétrica à direita (long-tail) · não-normal · Shapiro-Wilk p < 0,001 em todos os grupos'));
+  }catch(e){console.error('ov-scatter:',e)}
+})();
+
+// ── Chart: Overview range strips ──────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('ov-range');
+    var W=440,H=220,lM=90,rM=20,tM=14,bM=22;
+    var pW=W-lM-rM, pH=H-tM-bM;
+    var xMx=52;
+    var sX=function(v){return lM+(Math.min(v,xMx)/xMx)*pW};
+    var groups=[
+      {lbl:'Book Card',api:'REST',c:REST_C,st:SC[0].rest},
+      {lbl:'Book Card',api:'GQL',c:GQL_C,st:SC[0].gql},
+      {lbl:'Lista de 10',api:'REST',c:REST_C,st:SC[1].rest},
+      {lbl:'Lista de 10',api:'GQL',c:GQL_C,st:SC[1].gql},
+      {lbl:'Detalhe',api:'REST',c:REST_C,st:SC[2].rest},
+      {lbl:'Detalhe',api:'GQL',c:GQL_C,st:SC[2].gql}
+    ];
+    var rowH=pH/groups.length;
+    // X axis ticks + vertical grid
+    [0,10,20,30,40,50].forEach(function(v){
+      var x=sX(v);
+      svg.appendChild(mk('line',{x1:x,y1:tM,x2:x,y2:H-bM,stroke:'#f1f5f9','stroke-width':1}));
+      svg.appendChild(mk('text',{x:x,y:H-bM+13,'text-anchor':'middle',fill:'#94a3b8','font-size':8,'font-family':'ui-monospace,monospace'},v));
+    });
+    svg.appendChild(mk('line',{x1:lM,y1:tM,x2:lM,y2:H-bM,stroke:'#dde3eb','stroke-width':1}));
+    groups.forEach(function(g,i){
+      var cy=tM+i*rowH+rowH/2;
+      var st=g.st;
+      // actual max = last sorted val (includes outliers)
+      var vMax=st.vals[st.vals.length-1];
+      var xMn=sX(st.min), xMx2=sX(vMax), xQ1=sX(st.q1), xQ3=sX(st.q3), xMd=sX(st.med);
+      // Full range whisker
+      svg_line(svg,xMn,cy,xMx2,cy,g.c,1.1);
+      // Min end-cap
+      svg_line(svg,xMn,cy-4,xMn,cy+4,g.c,1.8);
+      // IQR box
+      svg.appendChild(mk('rect',{x:xQ1,y:cy-6,width:Math.max(2,xQ3-xQ1),height:12,fill:g.c+'45',stroke:g.c,'stroke-width':1.5,rx:2}));
+      // Median diamond
+      svg.appendChild(mk('polygon',{points:xMd+','+(cy-5.5)+' '+(xMd+4.5)+','+cy+' '+xMd+','+(cy+5.5)+' '+(xMd-4.5)+','+cy,fill:g.c}));
+      // Outlier circles
+      st.out.forEach(function(v){
+        var x=sX(v);
+        var gg=mk('g',{cursor:'pointer'});
+        gg.appendChild(mk('circle',{cx:x,cy:cy,r:3,fill:'none',stroke:g.c,'stroke-width':1.4,opacity:.85}));
+        addTip(gg,(function(grp,val){return function(){
+          return '<strong>'+grp.lbl+' — '+grp.api+'</strong><br>Outlier: '+val.toFixed(3)+' ms';
+        };})(g,v));
+        svg.appendChild(gg);
+      });
+      // Row labels
+      svg.appendChild(mk('text',{x:lM-7,y:cy-2,'text-anchor':'end',fill:'#475569','font-size':8.5},g.lbl));
+      svg.appendChild(mk('text',{x:lM-7,y:cy+9,'text-anchor':'end',fill:g.c,'font-size':9,'font-weight':700},g.api));
+      // Min/Max value annotations
+      svg.appendChild(mk('text',{x:xMn-3,y:cy-7,'text-anchor':'middle',fill:g.c,'font-size':7,'font-family':'ui-monospace,monospace'},st.min.toFixed(1)));
+      svg.appendChild(mk('text',{x:xMx2+3,y:cy-7,'text-anchor':'middle',fill:g.c,'font-size':7,'font-family':'ui-monospace,monospace'},vMax.toFixed(1)));
+    });
+    svg.appendChild(mk('text',{x:lM+pW/2,y:H,'text-anchor':'middle',fill:'#94a3b8','font-size':8},'tempo de resposta (ms)'));
+  }catch(e){console.error('ov-range:',e)}
+})();
+
+// ── Chart: RQ1 Box Plots ─────────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r1-box');
+    var W=440,H=270,P={t:15,r:12,b:48,l:38,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var allVals=[];
+    SC.forEach(function(s){
+      s.rest.out.forEach(function(v){allVals.push(v)});
+      s.gql.out.forEach(function(v){allVals.push(v)});
+      allVals.push(s.rest.max,s.gql.max);
+    });
+    var yMx=Math.ceil(Math.max.apply(null,allVals)/5)*5*1.05;
+    var sY=function(v){return P.t+pH-(v/yMx)*pH};
+    yGrid(svg,P,pH,yMx,[0,10,20,30,40,50]);
+    axis(svg,P,H);
+    svg.appendChild(mk('text',{x:9,y:P.t+pH/2,'text-anchor':'middle',fill:'#94a3b8','font-size':8,transform:'rotate(-90 9 '+(P.t+pH/2)+')'},'ms'));
+    var gW=pW/SC.length, bW=Math.min(gW*.22,18);
+    SC.forEach(function(s,i){
+      var cx=P.l+i*gW+gW/2;
+      var gr=drawOneBox(sY,cx-(bW/2+3),bW,s.rest,REST_C);
+      addTip(gr,function(sc){return function(){return '<strong>'+sc.lbl+' — REST</strong><br>Mediana: '+sc.rest.med+' ms &nbsp;·&nbsp; Média: '+sc.rest.mean+' ms<br>Q1–Q3: '+sc.rest.q1+'–'+sc.rest.q3+' ms<br>Outliers: '+sc.rest.out.length}}(s));
+      svg.appendChild(gr);
+      var gg=drawOneBox(sY,cx+(bW/2+3),bW,s.gql,GQL_C);
+      addTip(gg,function(sc){return function(){return '<strong>'+sc.lbl+' — GraphQL</strong><br>Mediana: '+sc.gql.med+' ms &nbsp;·&nbsp; Média: '+sc.gql.mean+' ms<br>Q1–Q3: '+sc.gql.q1+'–'+sc.gql.q3+' ms<br>Outliers: '+sc.gql.out.length}}(s));
+      svg.appendChild(gg);
+    });
+    xLabels(svg,P,H,gW,SC);
+  }catch(e){console.error('r1-box:',e)}
+})();
+
+// ── Chart: RQ1 Strip Chart ───────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r1-strip');
+    var W=440,H=270,P={t:15,r:12,b:48,l:38,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var yMx=44;
+    var sY=function(v){return P.t+pH-(Math.min(v,yMx)/yMx)*pH};
+    yGrid(svg,P,pH,yMx,[0,10,20,30,40]);
+    axis(svg,P,H);
+    svg.appendChild(mk('text',{x:9,y:P.t+pH/2,'text-anchor':'middle',fill:'#94a3b8','font-size':8,transform:'rotate(-90 9 '+(P.t+pH/2)+')'},'ms'));
+    var gW=pW/SC.length;
+    SC.forEach(function(s,i){
+      var cx=P.l+i*gW+gW/2;
+      var clW=gW*.33;
+      [[s.rest.vals,-(clW/2+2),REST_C,'REST',s.rest.med],[s.gql.vals,+(clW/2+2),GQL_C,'GraphQL',s.gql.med]].forEach(function(arr){
+        var vals=arr[0],dx=arr[1],c=arr[2],lbl=arr[3],med=arr[4];
+        var cx2=cx+dx;
+        vals.forEach(function(v,vi){
+          var jit=((vi*17+3)%11-5)*clW*.07;
+          var clipped=v>yMx;
+          var g=mk('g',{cursor:'crosshair'});
+          g.appendChild(mk('circle',{cx:cx2+jit,cy:sY(v),r:2.6,fill:c,opacity:clipped?0.35:0.5}));
+          if(clipped) g.appendChild(mk('text',{x:cx2+jit,y:sY(v)-4,'text-anchor':'middle',fill:c,'font-size':7},'▲'));
+          addTip(g,function(sc,lb,val,clip){return function(){return '<strong>'+sc.lbl+' — '+lb+'</strong><br>'+val+' ms'+(clip?' (clipado)':'')}}(s,lbl,v,clipped));
+          svg.appendChild(g);
+        });
+        // median line
+        svg.appendChild(mk('line',{x1:cx2-clW/2,y1:sY(med),x2:cx2+clW/2,y2:sY(med),stroke:c,'stroke-width':2.2,opacity:.9}));
+      });
+    });
+    xLabels(svg,P,H,gW,SC);
+    svg.appendChild(mk('text',{x:P.l+pW/2,y:H-P.b+40,'text-anchor':'middle',fill:'#94a3b8','font-size':8},'▲ = outliers acima de 44 ms (clipados no eixo)'));
+  }catch(e){console.error('r1-strip:',e)}
+})();
+
+// ── Chart: RQ1 ECDF ──────────────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r1-ecdf');
+    var W=440,H=250,tP=30,bP=42,lP=32,rP=6;
+    var panGap=10, panCount=3;
+    var panW=(W-lP-rP-(panCount-1)*panGap)/panCount;
+    var pH=H-tP-bP;
+    var xMax=40;
+    var sY=function(p){return tP+pH*(1-Math.max(0,Math.min(1,p)));};
+    function sX(v,pl){return pl+Math.max(0,Math.min(1,v/xMax))*panW;}
+    function ecdfPath(vals,pl){
+      var sorted=[].concat(vals).sort(function(a,b){return a-b});
+      var n=sorted.length;
+      var d='M '+sX(0,pl).toFixed(1)+','+sY(0).toFixed(1);
+      sorted.forEach(function(v,i){
+        var x=sX(v,pl).toFixed(1);
+        d+=' L '+x+','+sY(i/n).toFixed(1)+' L '+x+','+sY((i+1)/n).toFixed(1);
+      });
+      d+=' L '+sX(xMax,pl).toFixed(1)+','+sY(1).toFixed(1);
+      return d;
+    }
+    // Y axis labels (left panel only)
+    [0,0.25,0.5,0.75,1.0].forEach(function(p){
+      var y=sY(p);
+      svg.appendChild(mk('text',{x:lP-3,y:y+3,'text-anchor':'end',fill:'#94a3b8','font-size':7.5,'font-family':'ui-monospace,monospace'},(p*100).toFixed(0)+'%'));
+    });
+    // Y label
+    var ymid=tP+pH/2;
+    svg.appendChild(mk('text',{x:7,y:ymid,'text-anchor':'middle',fill:'#94a3b8','font-size':8,transform:'rotate(-90 7 '+ymid+')'},'F(x)'));
+    SC.forEach(function(s,i){
+      var pl=lP+i*(panW+panGap);
+      // Grid horizontals
+      [0,0.25,0.5,0.75,1.0].forEach(function(p){
+        var y=sY(p);
+        svg.appendChild(mk('line',{x1:pl,y1:y,x2:pl+panW,y2:y,stroke:'#f1f5f9','stroke-width':p===0||p===1?1:0.6}));
+      });
+      // Grid verticals + X tick labels
+      [0,10,20,30,40].forEach(function(v){
+        var x=sX(v,pl);
+        if(x>pl+panW+1) return;
+        svg.appendChild(mk('line',{x1:x,y1:tP,x2:x,y2:sY(0),stroke:'#f1f5f9','stroke-width':0.6}));
+        svg.appendChild(mk('text',{x:x,y:H-bP+13,'text-anchor':'middle',fill:'#94a3b8','font-size':7.5,'font-family':'ui-monospace,monospace'},v));
+      });
+      // Axes
+      svg.appendChild(mk('line',{x1:pl,y1:tP,x2:pl,y2:sY(0),stroke:'#dde3eb','stroke-width':1}));
+      svg.appendChild(mk('line',{x1:pl,y1:sY(0),x2:pl+panW,y2:sY(0),stroke:'#dde3eb','stroke-width':1}));
+      // Panel title
+      svg.appendChild(mk('text',{x:pl+panW/2,y:tP-13,'text-anchor':'middle',fill:'#334155','font-size':9.5,'font-weight':700},s.lbl));
+      svg.appendChild(mk('text',{x:pl+panW/2,y:tP-3,'text-anchor':'middle',fill:'#94a3b8','font-size':7.5},s.sub));
+      // ECDF curves
+      svg.appendChild(mk('path',{d:ecdfPath(s.rest.vals,pl),fill:'none',stroke:REST_C,'stroke-width':2,opacity:.9}));
+      svg.appendChild(mk('path',{d:ecdfPath(s.gql.vals,pl),fill:'none',stroke:GQL_C,'stroke-width':2,opacity:.9}));
+      // Median dashed verticals
+      var xRM=sX(s.rest.med,pl), xGM=sX(s.gql.med,pl);
+      svg.appendChild(mk('line',{x1:xRM,y1:tP,x2:xRM,y2:sY(0),stroke:REST_C,'stroke-width':1.1,'stroke-dasharray':'3,3',opacity:.7}));
+      svg.appendChild(mk('line',{x1:xGM,y1:tP,x2:xGM,y2:sY(0),stroke:GQL_C,'stroke-width':1.1,'stroke-dasharray':'3,3',opacity:.7}));
+      // Median labels at top
+      var rTxt=s.rest.med.toFixed(1), gTxt=s.gql.med.toFixed(1);
+      var sep=Math.abs(xGM-xRM)>22;
+      svg.appendChild(mk('text',{x:xRM+(sep?0:-12),y:tP+9,'text-anchor':'middle',fill:REST_C,'font-size':7,'font-family':'ui-monospace,monospace'},rTxt));
+      svg.appendChild(mk('text',{x:xGM+(sep?0:12),y:tP+18,'text-anchor':'middle',fill:GQL_C,'font-size':7,'font-family':'ui-monospace,monospace'},gTxt));
+      // Interactive tooltip area
+      var area=mk('rect',{x:pl,y:tP,width:panW,height:pH,fill:'transparent',cursor:'crosshair'});
+      (function(sc){
+        addTip(area,function(){
+          return '<strong>'+sc.lbl+'</strong><br>REST mediana: '+sc.rest.med+' ms<br>GQL mediana: '+sc.gql.med+' ms<br>REST é '+sc.td+'% mais rápido';
+        });
+      })(s);
+      svg.appendChild(area);
+    });
+    svg.appendChild(mk('text',{x:W/2,y:H,'text-anchor':'middle',fill:'#94a3b8','font-size':8},'tempo de resposta (ms)'));
+  }catch(e){console.error('r1-ecdf:',e)}
+})();
+
+// ── Chart: RQ1 Violin ────────────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r1-violin');
+    var W=440,H=250,P={t:15,r:12,b:48,l:38,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var yMx=50; // clip at 50ms (covers >99% of data)
+    var sY=function(v){return P.t+pH-(Math.max(0,Math.min(v,yMx))/yMx)*pH};
+    // KDE helpers
+    function silverman(vals){
+      var n=vals.length;
+      var m=vals.reduce(function(a,b){return a+b},0)/n;
+      var s=Math.sqrt(vals.reduce(function(a,v){return a+(v-m)*(v-m)},0)/(n-1));
+      return Math.max(0.5,1.06*s*Math.pow(n,-0.2));
+    }
+    function kde(vals,pts,h){
+      var sq2pi=Math.sqrt(2*Math.PI);
+      return pts.map(function(x){
+        var s=0;
+        vals.forEach(function(v){var z=(x-v)/h;s+=Math.exp(-0.5*z*z);});
+        return s/(vals.length*h*sq2pi);
+      });
+    }
+    // Build KDE eval points
+    var kPts=[];for(var ki=0;ki<=60;ki++) kPts.push(ki*yMx/60);
+    // Compute all densities to find global max for normalisation
+    var allDens=[];
+    SC.forEach(function(s){
+      var hR=silverman(s.rest.vals), hG=silverman(s.gql.vals);
+      allDens=allDens.concat(kde(s.rest.vals,kPts,hR),kde(s.gql.vals,kPts,hG));
+    });
+    var dMax=Math.max.apply(null,allDens);
+    var vHalf=Math.min(pW/(SC.length*2+1)*0.85,24); // max half-width of violin
+    yGrid(svg,P,pH,yMx,[0,10,20,30,40,50]);
+    axis(svg,P,H);
+    svg.appendChild(mk('text',{x:9,y:P.t+pH/2,'text-anchor':'middle',fill:'#94a3b8','font-size':8,transform:'rotate(-90 9 '+(P.t+pH/2)+')'},'ms'));
+    var gW=pW/SC.length;
+    SC.forEach(function(s,i){
+      var gCx=P.l+i*gW+gW/2;
+      [[s.rest,'REST',REST_C,-vHalf-3],[s.gql,'GraphQL',GQL_C,vHalf+3]].forEach(function(arr){
+        var st=arr[0],lbl=arr[1],c=arr[2],dx=arr[3];
+        var cx=gCx+dx;
+        var h=silverman(st.vals);
+        var dens=kde(st.vals,kPts,h);
+        // Build symmetric polygon points
+        var left=[],right=[];
+        kPts.forEach(function(pt,ki){
+          var hw=(dens[ki]/dMax)*vHalf;
+          var y=sY(pt);
+          left.push((cx-hw)+','+y);
+          right.unshift((cx+hw)+','+y);
+        });
+        var poly=mk('polygon',{points:left.join(' ')+' '+right.join(' '),fill:c+'50',stroke:c,'stroke-width':1.2});
+        svg.appendChild(poly);
+        // Median line
+        svg_line(svg,cx-vHalf*0.65,sY(st.med),cx+vHalf*0.65,sY(st.med),c,2.2);
+        // IQR box outline
+        var bx=cx-vHalf*0.35, bw=vHalf*0.7;
+        var boxY=sY(st.q3), boxH=sY(st.q1)-sY(st.q3);
+        svg.appendChild(mk('rect',{x:bx,y:boxY,width:bw,height:boxH,fill:c+'30',stroke:c,'stroke-width':1,rx:1}));
+        // Interactive
+        var area=mk('rect',{x:cx-vHalf,y:P.t,width:vHalf*2,height:pH,fill:'transparent',cursor:'crosshair'});
+        addTip(area,(function(sc,lb,s2){return function(){
+          return '<strong>'+sc.lbl+' — '+lb+'</strong><br>Mediana: '+s2.med+' ms · IQR: '+s2.q1+'–'+s2.q3+' ms';
+        };})(s,lbl,st));
+        svg.appendChild(area);
+      });
+    });
+    xLabels(svg,P,H,gW,SC);
+  }catch(e){console.error('r1-violin:',e)}
+})();
+
+// ── Chart: RQ2 Absolute size ─────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r2-abs');
+    var W=440,H=250,P={t:15,r:12,b:48,l:42,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var yMx=Math.max.apply(null,SC.map(function(s){return s.rs}))*1.1;
+    var sY=function(v){return P.t+pH-(v/yMx)*pH};
+    yGrid(svg,P,pH,yMx,[0,3000,6000,9000,12000],function(v){return v>=1000?(v/1000)+'k':v});
+    axis(svg,P,H);
+    svg.appendChild(mk('text',{x:9,y:P.t+pH/2,'text-anchor':'middle',fill:'#94a3b8','font-size':8,transform:'rotate(-90 9 '+(P.t+pH/2)+')'},'bytes'));
+    var gW=pW/SC.length, bW=Math.min(gW*.28,24);
+    SC.forEach(function(s,i){
+      var cx=P.l+i*gW+gW/2;
+      [[s.rs,-(bW/2+3),REST_C,'REST'],[s.gs,+(bW/2+3),GQL_C,'GraphQL']].forEach(function(arr){
+        var sz=arr[0],dx=arr[1],c=arr[2],lbl=arr[3];
+        var g=mk('g',{cursor:'pointer'});
+        var bH=pH-(sY(sz)-P.t);
+        g.appendChild(mk('rect',{x:cx+dx-bW/2,y:sY(sz),width:bW,height:bH,fill:c+'cc',rx:3}));
+        var fmt=sz>=1000?(sz/1000).toFixed(1)+'k':sz;
+        if(bH>14) g.appendChild(mk('text',{x:cx+dx,y:sY(sz)-4,'text-anchor':'middle',fill:c,'font-size':8.5,'font-weight':700,'font-family':'ui-monospace,monospace'},fmt));
+        addTip(g,function(sc,lb,v){return function(){return '<strong>'+sc.lbl+' — '+lb+'</strong><br>'+v.toLocaleString()+' bytes'}}(s,lbl,sz));
+        svg.appendChild(g);
+      });
+    });
+    xLabels(svg,P,H,gW,SC);
+  }catch(e){console.error('r2-abs:',e)}
+})();
+
+// ── Chart: RQ2 % Reduction ───────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r2-pct');
+    var W=440,H=250,P={t:15,r:15,b:48,l:38,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var sY=function(v){return P.t+pH-(v/100)*pH};
+    yGrid(svg,P,pH,100,[0,25,50,75,100],function(v){return v+'%'});
+    axis(svg,P,H);
+    svg.appendChild(mk('text',{x:9,y:P.t+pH/2,'text-anchor':'middle',fill:'#94a3b8','font-size':8,transform:'rotate(-90 9 '+(P.t+pH/2)+')'},'% redução'));
+    var gW=pW/SC.length, bW=Math.min(gW*.48,52);
+    SC.forEach(function(s,i){
+      var cx=P.l+i*gW+gW/2;
+      var g=mk('g',{cursor:'pointer'});
+      g.appendChild(mk('rect',{x:cx-bW/2,y:sY(s.sp),width:bW,height:(s.sp/100)*pH,fill:GRN_C+'bb',rx:4}));
+      g.appendChild(mk('text',{x:cx,y:sY(s.sp)-5,'text-anchor':'middle',fill:GRN_C,'font-size':14,'font-weight':800,'font-family':'ui-monospace,monospace'},s.sp+'%'));
+      addTip(g,function(sc){return function(){return '<strong>'+sc.lbl+'</strong><br>'+sc.rs.toLocaleString()+' B → '+sc.gs.toLocaleString()+' B<br>Redução: <strong>'+sc.sp+'%</strong>'}}(s));
+      svg.appendChild(g);
+    });
+    xLabels(svg,P,H,gW,SC);
+  }catch(e){console.error('r2-pct:',e)}
+})();
+
+// ── Chart: RQ2 Waste stacked horizontal ──────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r2-waste');
+    var W=440,H=230,P={t:10,r:15,b:18,l:88,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var xMx=Math.max.apply(null,SC.map(function(s){return s.rs}))*1.05;
+    var sX=function(v){return P.l+(v/xMx)*pW};
+    var rowH=pH/SC.length;
+    var bH=Math.min(rowH*.38,20);
+    // x ticks
+    [0,3000,6000,9000,12000].forEach(function(v){
+      if(v>xMx*1.01) return;
+      var x=sX(v);
+      svg.appendChild(mk('line',{x1:x,y1:P.t,x2:x,y2:H-P.b,stroke:'#f1f5f9','stroke-width':1}));
+      svg.appendChild(mk('text',{x:x,y:H-P.b+11,'text-anchor':'middle',fill:'#94a3b8','font-size':8,'font-family':'ui-monospace,monospace'},v>=1000?(v/1000)+'k':v));
+    });
+    SC.forEach(function(s,i){
+      var cy=P.t+i*rowH+rowH/2;
+      var usefulW=sX(s.gs)-P.l;
+      var wasteW=sX(s.rs)-sX(s.gs);
+      // REST row
+      var rY=cy-bH/2-2;
+      var rg=mk('g',{cursor:'pointer'});
+      rg.appendChild(mk('rect',{x:P.l,y:rY,width:usefulW,height:bH,fill:GQL_C+'99',rx:0}));
+      rg.appendChild(mk('rect',{x:P.l+usefulW,y:rY,width:wasteW,height:bH,fill:REST_C+'80',rx:0}));
+      rg.appendChild(mk('rect',{x:P.l,y:rY,width:usefulW+wasteW,height:bH,fill:'none',stroke:'#dde3eb','stroke-width':.5}));
+      if(wasteW>35) rg.appendChild(mk('text',{x:P.l+usefulW+wasteW/2,y:rY+bH/2+3,'text-anchor':'middle',fill:'#7f1d1d','font-size':8,'font-weight':700},s.sp+'% desperd.'));
+      addTip(rg,function(sc){return function(){return '<strong>'+sc.lbl+' — REST</strong><br>Total: '+sc.rs.toLocaleString()+' B<br>Útil: '+sc.gs.toLocaleString()+' B · Desperdiçado: '+(sc.rs-sc.gs).toLocaleString()+' B ('+sc.sp+'%)'}}(s));
+      svg.appendChild(rg);
+      svg.appendChild(mk('text',{x:P.l-5,y:rY+bH/2+3.5,'text-anchor':'end',fill:'#334155','font-size':9.5,'font-weight':700},'REST'));
+      // GraphQL row
+      var gY=cy+2;
+      var gg=mk('g',{cursor:'pointer'});
+      gg.appendChild(mk('rect',{x:P.l,y:gY,width:usefulW,height:bH,fill:GQL_C+'cc',rx:0}));
+      gg.appendChild(mk('text',{x:P.l+usefulW+4,y:gY+bH/2+3.5,fill:'#0369a1','font-size':8,'font-weight':700,'font-family':'ui-monospace,monospace'},s.gs.toLocaleString()+' B'));
+      addTip(gg,function(sc){return function(){return '<strong>'+sc.lbl+' — GraphQL</strong><br>'+sc.gs.toLocaleString()+' B — 100% útil'}}(s));
+      svg.appendChild(gg);
+      svg.appendChild(mk('text',{x:P.l-5,y:gY+bH/2+3.5,'text-anchor':'end',fill:'#334155','font-size':9.5,'font-weight':700},'GQL'));
+    });
+    svg.appendChild(mk('text',{x:P.l+pW/2,y:H,'text-anchor':'middle',fill:'#94a3b8','font-size':8},'bytes'));
+  }catch(e){console.error('r2-waste:',e)}
+})();
+
+// ── Chart: RQ2 Fields waffle ─────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('r2-fields');
+    var W=440,H=230;
+    var FIELDS=20;
+    var USED=[5,4,13]; // GraphQL fields requested per scenario
+    var sqSz=13, sqGap=3, sqStep=sqSz+sqGap;
+    var rowW=FIELDS*sqStep-sqGap; // 20*16-3=317px
+    var startX=(W-rowW)/2;
+    var rowH=sqSz+sqGap;
+    var rowCount=SC.length;
+    var totalH=rowCount*sqStep-sqGap;
+    var startY=(H-totalH-28)/2+10; // leave room for labels above
+    // Legend at top
+    svg.appendChild(mk('rect',{x:startX,y:8,width:10,height:10,fill:GQL_C+'cc',rx:2}));
+    svg.appendChild(mk('text',{x:startX+13,y:17.5,fill:'#334155','font-size':9},'Campos solicitados pelo GraphQL'));
+    svg.appendChild(mk('rect',{x:startX+170,y:8,width:10,height:10,fill:'#e2e8f0',rx:2}));
+    svg.appendChild(mk('text',{x:startX+183,y:17.5,fill:'#334155','font-size':9},'Campos ignorados pelo GraphQL'));
+    SC.forEach(function(s,i){
+      var y=startY+i*sqStep;
+      var used=USED[i];
+      // Row label on left
+      svg.appendChild(mk('text',{x:startX-5,y:y+sqSz/2+3.5,'text-anchor':'end',fill:'#334155','font-size':9.5,'font-weight':700},s.lbl));
+      svg.appendChild(mk('text',{x:startX-5,y:y+sqSz/2+14,'text-anchor':'end',fill:'#94a3b8','font-size':8},s.sub));
+      for(var f=0;f<FIELDS;f++){
+        var x=startX+f*sqStep;
+        var isUsed=f<used;
+        var rect=mk('rect',{x:x,y:y,width:sqSz,height:sqSz,rx:2,
+          fill:isUsed?GQL_C+'cc':'#e2e8f0',
+          stroke:isUsed?GQL_C+'88':'#cbd5e1','stroke-width':0.8
+        });
+        (function(fi,iu,sc){
+          addTip(rect,function(){
+            return '<strong>'+sc.lbl+' — Campo '+(fi+1)+'</strong><br>'+(iu?'Solicitado pelo GraphQL':'Somente REST — over-fetching');
+          });
+        })(f,isUsed,s);
+        svg.appendChild(rect);
+      }
+      // Annotation on right
+      svg.appendChild(mk('text',{x:startX+rowW+7,y:y+sqSz/2+3.5,fill:GQL_C,'font-size':9,'font-weight':700,'font-family':'ui-monospace,monospace'},used+'/'+FIELDS));
+      svg.appendChild(mk('text',{x:startX+rowW+7,y:y+sqSz/2+14,fill:'#94a3b8','font-size':7.5},Math.round(used/FIELDS*100)+'% útil'));
+    });
+  }catch(e){console.error('r2-fields:',e)}
+})();
+
+// ── Chart: Stats Cohen's d ────────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('st-d');
+    var W=440,H=210,P={t:15,r:25,b:48,l:38,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var yMx=1.2;
+    var sY=function(v){return P.t+pH-(v/yMx)*pH};
+    // Reference lines
+    [[0.2,'Pequeno','#94a3b8'],[0.5,'Médio',REST_C],[0.8,'Grande',GRN_C]].forEach(function(arr){
+      var v=arr[0],lbl=arr[1],c=arr[2];
+      var y=sY(v);
+      svg.appendChild(mk('line',{x1:P.l,y1:y,x2:W-P.r,y2:y,stroke:c,'stroke-width':1.2,'stroke-dasharray':'4,3',opacity:.7}));
+      svg.appendChild(mk('text',{x:W-P.r+3,y:y+3.5,fill:c,'font-size':8.5},lbl));
+    });
+    yGrid(svg,P,pH,yMx,[0,0.2,0.4,0.6,0.8,1.0,1.2]);
+    axis(svg,P,H);
+    var dVals=[0.629,0.539,0.906];
+    var gW=pW/SC.length, bW=Math.min(gW*.42,42);
+    SC.forEach(function(s,i){
+      var cx=P.l+i*gW+gW/2;
+      var v=dVals[i];
+      var c=v>=0.8?GRN_C:v>=0.5?REST_C:'#64748b';
+      var g=mk('g',{cursor:'pointer'});
+      g.appendChild(mk('rect',{x:cx-bW/2,y:sY(v),width:bW,height:pH-(sY(v)-P.t),fill:c+'bb',rx:3}));
+      g.appendChild(mk('text',{x:cx,y:sY(v)-5,'text-anchor':'middle',fill:c,'font-size':12,'font-weight':800,'font-family':'ui-monospace,monospace'},v));
+      addTip(g,function(sc,dv){return function(){return '<strong>'+sc.lbl+'</strong><br>Cohen\'s d = '+dv+'<br>Efeito: '+(dv>=0.8?'grande':dv>=0.5?'médio':'pequeno')}}(s,v));
+      svg.appendChild(g);
+    });
+    xLabels(svg,P,H,gW,SC);
+  }catch(e){console.error('st-d:',e)}
+})();
+
+// ── Chart: Stats Shapiro-Wilk ─────────────────────────────────────────────
+(function(){
+  try{
+    var svg=document.getElementById('st-norm');
+    var W=440,H=210,P={t:15,r:12,b:48,l:38,w:440};
+    var pW=W-P.l-P.r, pH=H-P.t-P.b;
+    var yMx=0.12;
+    var sY=function(v){return P.t+pH-(v/yMx)*pH};
+    yGrid(svg,P,pH,yMx,[0,0.05,0.10],function(v){return v.toFixed(2)});
+    axis(svg,P,H);
+    // alpha line
+    var ay=sY(0.05);
+    svg.appendChild(mk('line',{x1:P.l,y1:ay,x2:W-P.r,y2:ay,stroke:'#dc2626','stroke-width':1.5,'stroke-dasharray':'5,3'}));
+    svg.appendChild(mk('text',{x:W-P.r+2,y:ay+3.5,fill:'#dc2626','font-size':8.5},'α=0,05'));
+    svg.appendChild(mk('text',{x:9,y:P.t+pH/2,'text-anchor':'middle',fill:'#94a3b8','font-size':8,transform:'rotate(-90 9 '+(P.t+pH/2)+')'},'p-valor'));
+    var gW=pW/SC.length, bW=Math.min(gW*.22,18);
+    var dispV=0.001;
+    SC.forEach(function(s,i){
+      var cx=P.l+i*gW+gW/2;
+      [[REST_C,'REST'],[GQL_C,'GraphQL']].forEach(function(arr,j){
+        var c=arr[0],lbl=arr[1];
+        var dx=(j===0?-(bW/2+2):(bW/2+2));
+        var g=mk('g',{cursor:'pointer'});
+        g.appendChild(mk('rect',{x:cx+dx-bW/2,y:sY(dispV),width:bW,height:pH-(sY(dispV)-P.t),fill:c+'bb',rx:3}));
+        g.appendChild(mk('text',{x:cx+dx,y:sY(dispV)-4,'text-anchor':'middle',fill:c,'font-size':8},'<0,001'));
+        addTip(g,function(sc,lb){return function(){return '<strong>'+sc.lbl+' — '+lb+'</strong><br>Shapiro-Wilk p &lt; 0,001<br>→ NÃO normal → Wilcoxon'}}(s,lbl));
+        svg.appendChild(g);
+      });
+    });
+    xLabels(svg,P,H,gW,SC);
+    svg.appendChild(mk('text',{x:P.l+pW/2,y:H-P.b+40,'text-anchor':'middle',fill:'#94a3b8','font-size':8.5},'Todos abaixo de α=0,05 → não-normais → Wilcoxon é o teste correto'));
+  }catch(e){console.error('st-norm:',e)}
+})();
+</script>
+</body>
+</html>
